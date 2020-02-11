@@ -1,5 +1,10 @@
 go.Relations = {
 
+	TYPE_MAP : 'map',
+	TYPE_SCALAR : 'scalar',
+	TYPE_ARRAY : 'array',
+	TYPE_HAS_ONE : 'hasone',
+
   entityStore: null,
   get : function (entityStore, entity, relations) {
 
@@ -22,9 +27,9 @@ go.Relations = {
 	 * Create a promise that resolves the relational record data.
 	 * 
 	 * @param {string|object} relName Relation name or object with {name: "users", limit: 5}. This will only resolve the first 5 entities and put the total in record.json._meta.users.total
-	 * @param {*any} record 
+	 * @param {object} entity
 	 * 
-	 * @retrun {Promise}
+	 * @return {Promise}
 	 */
 	getRelation : function(relName, entity) {
 
@@ -40,10 +45,10 @@ go.Relations = {
 			return Promise.reject("Relation " + relName + " not found for " + this.entityStore.entity.name);
 		}
 
-		var key = this.resolveKey(relation.path + relation.fk, entity), me = this;
+		return this.resolveKey(relName, entity);
 
-		if(!key) {
-      me.applyRelationEntity(relation.path + relName, entity, null);
+		/*if(!key) {
+            me.applyRelationEntity(relation.path + relName, entity, null);
 			return Promise.resolve(null);
 		}		
 
@@ -69,7 +74,7 @@ go.Relations = {
 
 		return go.Db.store(relation.store).single(key).then(function(relatedEntity) {
 			me.applyRelationEntity(relName, entity, relatedEntity);
-		});
+		});*/
 	},
 
 	/**
@@ -101,16 +106,28 @@ go.Relations = {
 	 * @param {*} key 
 	 * @param {*} record 
 	 * @param {*} entities 
-	 */
-	applyRelationEntity : function(relName, record, entities) {
-		var parts = relName.split("."),last = parts.pop(), current = record;
+	 * /
+	applyRelationEntity : function(relName, data, entities) {
+		var parts = relName.split("."),last = parts.pop();
+		var relation = this.entityStore.entity.relations;
 
 		parts.forEach(function(p) {
-			if(!current[p]) {
-				current[p] = {};
+			relation = relation[p];
+			if(relation.fk) {
+				p = relation.fk;
+			}
+
+			data = data[p];
+
+			if(relation.type == go.Relations.TYPE_MAP) {
+				var arr = [];
+				for(var id in data){
+					this.
+				}
+				data = arr;
 			}
 			
-			current = current[p];
+
 		});
 
 		if(Ext.isArray(current)) {
@@ -120,40 +137,132 @@ go.Relations = {
 		}else{
 			current[last] = entities;
 		}
-	},
+	},*/
 
 	/**
 	 * Resolves a key path eg. "customFields.user"
 	 * 
-	 * @param {*} key 
+	 * @param {string} key
 	 * @param {*} data 
 	 */
 	resolveKey : function(key, data) {
-		if(!data) {
-			return null;
-		}
-		var parts = key.split("."), part;
-						
-		for(var i = 0, l = parts.length; i < l; i++) {
-			p = parts[i];
-			if(Ext.isArray(data)) {
-				var arr = [];
-				data.forEach(function(i) {
-					arr.push(i[p]);
-				});
-				data = arr;
-			} else
-			{
-				if(!Ext.isDefined(data[p])) {
-					return null;
-				}
-				data = data[p];
+
+
+		var promises = [];
+
+		function fetchData(relation, relName, item) {
+			var key = item[relation.fk];
+			if(!key) {
+				item[relName] = null;
+				return;
 			}
+			promises.push(go.Db.store(relation.store).single(key).then(function(relatedEntity) {
+				item[relName] = relatedEntity;
+			}).catch(function() {
+				item[relName] = null;
+			}));
+		}
+
+		if(!data) {
+			return Promise.resolve();
+		}
+		var parts = key.split("."), p, arr;
+		var relation = this.entityStore.entity.relations;
+		for(var i = 0, l = parts.length; i < l; i++) {
+			p = relName = parts[i];
+
+			relation = relation[p];
+			if(!relation) {
+				throw "relation " + p + " does not exist";
+			}
+
+			if(relation.fk) {
+				p = relation.fk;
+			}
+
+			if(!relation.type) {
+				if(Ext.isObject(data[p])) {
+					relation.type = go.Relations.TYPE_HAS_ONE;
+				} else if(Ext.isArray(data[p])) {
+					if(data[p].length === 0 || !Ext.isObject(data[p][0])) {
+						relation.type = go.Relations.TYPE_SCALAR;
+					} else {
+						relation.type = go.Relations.TYPE_ARRAY;
+					}
+				}
+			}
+
+			switch(relation.type) {
+
+				case go.Relations.TYPE_MAP:
+					data = data[p];
+					arr = [];
+					for (var id in data) {
+						if (relation.fk) {
+							fetchData(relation, relName, data);
+						} else {
+							arr.push(data[id]);
+						}
+					}
+					data = arr;
+					break;
+
+				case go.Relations.TYPE_SCALAR:
+					var scalar = data[p];
+					data[relName] = [];
+					scalar.forEach(function (key) {
+						promises.push(go.Db.store(relation.store).single(key).then(function(relatedEntity) {
+							data[relName].push(relatedEntity);
+						}).catch(function() {
+							//??? Not found id?
+						}));
+					});
+					break;
+
+				case go.Relations.TYPE_ARRAY:
+
+					data = data[p];
+					arr = [];
+					data.forEach(function (item) {
+						if (relation.fk) {
+							fetchData(relation, relName, item);
+						} else {
+							arr.push(item);
+						}
+					});
+					if (!relation.fk) {
+						data = arr;
+					}
+					break;
+
+				default:
+					if(Ext.isArray(data)) {
+						arr = [];
+						data.forEach(function (item) {
+							if (relation.fk) {
+								fetchData(relation, relName, item);
+							} else {
+								arr.push(item);
+							}
+						});
+						if (!relation.fk) {
+							data = arr;
+						}
+					} else {
+						if (relation.fk) {
+							fetchData(relation, relName, data);
+						} else {
+							data = data[p];
+						}
+					}
+				break;
+			}
+
 			if(!data) {
-				return null;
+				return Promise.resolve();
 			}
 		}
 		
-		return data;
+		return Promise.all(promises);
 	}
 };
