@@ -47,8 +47,7 @@ go.form.FormGroup = Ext.extend(Ext.Panel, {
 		anchor: "100%"
 	},
 	
-	initComponent : function() {		
-		
+	initComponent : function() {
 		//No longer needed when cancelling add event.
 //		//to prevent items to be cascaded by Extjs basic form
 //		this.itemCfg.findBy = false;
@@ -115,7 +114,7 @@ go.form.FormGroup = Ext.extend(Ext.Panel, {
 		var item = Ext.ComponentMgr.create(this.itemCfg);
 		
 		if(!item.getValue || !item.setValue) {
-			throw new "Form Group item must be a form field";
+			throw "Form Group item must be a form field";
 		}
 		
 		return item;
