@@ -1,3 +1,37 @@
+14-02-2020 6.4.115
+- Core: Clear indexedDB cache when /install/upgrade.php has been executed
+- Calendar: Fixed event link not working first time when creating from another item via + button
+- Core: Various visual enhancements
+- Core: Fixed "Models are read only error"
+
+11-02-2020 6.4.114
+- Files / Core: fix for error loading comments after collapsing file browser popup
+- Projects: Support new framework filters
+- Projects: Added export to main grid
+- Core: fixed filter after fixed date
+
+10-02-2020 6.4.113
+- Core: Don't encode installation files with ioncube.
+- Core: Support fixed dates in date filters 
+
+07-02-2020 6.4.112
+- Core: Fixed bugs in group dialog with loading and changing users when deselecting
+- Core: Updated German translation
+- Address book: Select contact field always showed contacts and organizations
+- Tickets: Changing contact in ticket didn't work properly
+
+03-02-2020 6.4.111
+- Core: Remove fields from fieldset too after deleting fieldset and added loadmask
+- Core: Optimized indexes of core_link table for faster filtering in the address book
+- E-mail: Fixed converting non-latin characters when creating labels
+- Core / E-mail: Fixed paste and drop of file in html editor
+- Core: smaller font size for printing. Fixed at 12px.
+- ActiveSync: Fixed problem with invalid imap flags reponse causing mails to stay unread on the devices using ActiveSync
+- Core: Fixed invalid output problem on installation
+- Custom field: template parses {{createdAtShortYear}} and uses the last 2 digits of the year #554
+- Billing: Fixed font size in billing tax rate combo
+- Newsletters / Email: Fixed Add sender to address list function
+
 30-01-2020 6.4.110
 - Files / Core: Db check fixes acl problem with files
 - Newsletters: Newsletters set Content-Disposition: inline on attachments. They did not show up on Outlook
@@ -705,6 +739,8 @@ https://groupoffice.readthedocs.io/en/latest/using/connect-a-device/connect-a-de
 - Calendasr: Show unconfirmed holidays
 - Projects: Send company id when selecting contact
 
+
+- Sieve: Fixed bug where sieve dialog showed folders of other account
 
 27-01-2020 6.3.89
 - Tickets: Show confirm on closing tickets option broke module settings and email viewing.

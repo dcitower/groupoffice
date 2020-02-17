@@ -9,13 +9,10 @@ use go\core\data\convert\Json;
 use go\core\model\Acl;
 use go\core\App;
 use go\core\db\Criteria;
-use go\core\orm\Query;
+use go\core\util\DateTime;
 use go\core\util\StringUtil;
 use go\core\validate\ErrorCode;
 use go\core\model\Module;
-use go\core\data\exception\NotArrayable;
-use go\core\ErrorHandler;
-use go\core\util\ClassFinder;
 use GO\Files\Model\Folder;
 use function go;
 
@@ -79,6 +76,15 @@ abstract class Entity extends Property {
 	 */
 	const EVENT_FILTER = "filter";
 
+
+	/**
+	 * Fires when sorting. Other modules can alter sort behavior.
+	 *
+	 * @param Query $query
+	 * #param array $sort
+	 */
+	const EVENT_SORT = "sort";
+
   /**
    * Find entities
    *
@@ -117,20 +123,21 @@ abstract class Entity extends Property {
 	}
 
 	/**
-	 * Find by ID's. 
-	 * 
+	 * Find by ID's.
+	 *
 	 * It will search on the primary key field of the first mapped table.
-	 * 
+	 *
 	 * @exanple
 	 * ```
 	 * $note = Note::findById(1);
-	 * 
+	 *
 	 * //If a key has more than one column they can be combined with a "-". eg. "1-2"
 	 * $models = ModelWithDoublePK::findById("1-1");
 	 * ```
-	 * 
-	 * @param string $id 
+	 *
+	 * @param string $id
 	 * @param string[] $properties
+	 * @param bool $readOnly
 	 * @return static
 	 * @throws Exception
 	 */
@@ -139,22 +146,23 @@ abstract class Entity extends Property {
 		return static::internalFindById($id, $properties, $readOnly);
 	}
 
-  /**
-   * Find entities by ids.
-   *
-   * @exanple
-   * ```
-   * $notes = Note::findByIds([1, 2, 3]);
-   * ```
-   * @exanple
-   * ```
-   * $models = ModelWithDoublePK::findByIds(["1-1", "2-1", "3-3"]);
-   * ```
-   * @param array $ids
-   * @param array $properties
-   * @return Entity|\go\core\orm\Query
-   * @throws Exception
-   */
+	/**
+	 * Find entities by ids.
+	 *
+	 * @exanple
+	 * ```
+	 * $notes = Note::findByIds([1, 2, 3]);
+	 * ```
+	 * @exanple
+	 * ```
+	 * $models = ModelWithDoublePK::findByIds(["1-1", "2-1", "3-3"]);
+	 * ```
+	 * @param array $ids
+	 * @param array $properties
+	 * @param bool $readOnly
+	 * @return Entity|\go\core\orm\Query
+	 * @throws Exception
+	 */
 	public static final function findByIds(array $ids, array $properties = [], $readOnly = false) {
 		$tables = static::getMapping()->getTables();
 		$primaryTable = array_shift($tables);
@@ -587,7 +595,8 @@ abstract class Entity extends Property {
 			});
 		}
 
-		
+		self::defineLegacyFilters($filters);
+
 		if(method_exists(static::class, 'defineCustomFieldFilters')) {
 			static::defineCustomFieldFilters($filters);
 		}
@@ -627,6 +636,40 @@ abstract class Entity extends Property {
 		static::fireEvent(self::EVENT_FILTER, $filters);
 		
 		return $filters;
+	}
+
+	/**
+	 * Support for old framework columns. May be removed if all modules are refactored.
+	 *
+	 * @param Filters $filters
+	 * @throws Exception
+	 */
+	private static function defineLegacyFilters(Filters $filters) {
+		if (static::getMapping()->getColumn('ctime')) {
+			$filters->addDate('createdAt', function (Criteria $criteria, $comparator, DateTime $value, Query $query) {
+				$criteria->andWhere('ctime', $comparator, $value->format("U"));
+			});
+		}
+
+		if (static::getMapping()->getColumn('mtime')) {
+			$filters->addDate('modifiedAt', function (Criteria $criteria, $comparator, DateTime $value, Query $query) {
+				$criteria->andWhere('mtime', $comparator, $value->format("U"));
+			});
+		}
+
+		if (static::getMapping()->getColumn('user_id')) {
+			$filters->addText('createdBy', function (Criteria $criteria, $comparator, $value, Query $query) {
+				$query->join('core_user', 'creator', 'creator.id = p.user_id');
+				$query->andWhere('creator.displayName', $comparator, $value);
+			});
+		}
+
+		if (static::getMapping()->getColumn('muser_id')) {
+			$filters->addText('modifiedBy', function (Criteria $criteria, $comparator, $value, Query $query) {
+				$query->join('core_user', 'modifier', 'creator.id = p.muser_id');
+				$query->andWhere('modifier.displayName', $comparator, $value);
+			});
+		}
 	}
 
   /**
@@ -775,9 +818,11 @@ abstract class Entity extends Property {
 				break;
 			}
 		}
+
+		static::fireEvent(self::EVENT_SORT, $query, $sort);
 		
 		$query->orderBy($sort, true);
-		
+
 		return $query;
 	}
 
@@ -853,9 +898,8 @@ abstract class Entity extends Property {
    * @throws Exception
 	 */
 	public static function check() {
-		echo "Checking ".static::class."\n";
+		//NOTE: this function may not output as it's used by install.php
 		if(property_exists(static::class, 'filesFolderId') && Module::isInstalled('legacy', 'files')) {
-			echo "Fixing files folder ID's\n";
 			$tables = static::getMapping()->getTables();
 			$table = array_values($tables)[0]->getName();
 			go()->getDbConnection()->update(
@@ -866,8 +910,6 @@ abstract class Entity extends Property {
 					->where('filesFolderId', 'NOT IN', (new Query())->select('id')->from('fs_folders'))
 			)->execute();
 		}
-
-		echo "Done\n";
 	}
 
 
