@@ -101,7 +101,8 @@ go.permissions.SharePanel = Ext.extend(go.grid.EditorGridPanel, {
 										html = user ? "" : '<i class="icon">group</i>';
 
 							memberStr = record.get('users').column('displayName').join(", ");								
-							var more = record.json._meta.users.total - store.fields.item('users').limit;
+							// var more = record.json._meta.users.total - store.fields.item('users').limit;
+							var more = record.json.users.total - store.fields.item('users').limit;
 							if(more > 0) {
 								memberStr += t(" and {count} more").replace('{count}', more);
 							}					

@@ -95,6 +95,33 @@
             }
 
             return traverse(obj, last, value);
+        },
+
+        values : function(obj) {
+            var vals = [];
+            for (var key in obj) {
+                vals.push(obj[key]);
+            }
+            return vals;
+        },
+
+        /**
+         * Convert a mapped relation to a flat array. The key for each object element is the identifier (e.g. id)
+         * for within the value. Normally this would be ID
+         * @param obj
+         * @param i optional override for identifier key
+         * @returns {*}
+         */
+        convertMapToArray : function(obj, i) {
+            i = i || "id";
+            var arRet = Object.values(obj),arKeys = Object.keys(obj);
+            for(var idx=0;idx<arRet.length;idx++) {
+                var k = arKeys[idx],v = arRet[idx];
+                if(!v[i]) {
+                    v[i] = Number(k);
+                }
+            }
+            return arRet;
         }
     };
 
