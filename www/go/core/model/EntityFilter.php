@@ -46,6 +46,7 @@ class EntityFilter extends AclOwnerEntity {
 	}
 	
 	public function setFilter($filter) {
+		
 		$this->filter = json_encode($filter);
 	}
 	
@@ -58,6 +59,7 @@ class EntityFilter extends AclOwnerEntity {
 	}
 
 	protected static function defineFilters() {
+		
 		return parent::defineFilters()
 			->add('entity', function (Criteria $criteria, $value, \go\core\orm\Query $query){
 				$query->join('core_entity', 'e', 'e.id = f.entityTypeId');

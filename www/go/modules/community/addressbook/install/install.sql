@@ -107,6 +107,13 @@ CREATE TABLE `addressbook_user_settings` (
   `defaultAddressBookId` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=COMPACT;
 
+CREATE TABLE `addressbook_filter_contact_map`(
+`id` int(11) NOT NULL,
+`addressBookId` INT(11) DEFAULT NULL,
+`contactId` INT(11) DEFAULT NULL
+)ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = COMPACT;
+
+
 
 ALTER TABLE `addressbook_address`
   ADD KEY `contactId` (`contactId`);
@@ -156,6 +163,10 @@ ALTER TABLE `addressbook_user_settings`
   ADD PRIMARY KEY (`userId`),
   ADD KEY `defaultAddressBookId` (`defaultAddressBookId`);
 
+ALTER TABLE `addressbook_filter_contact_map`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY 'addressBookId' ('addressBookId')
+  ADD KEY 'contactId' ('contactId')
 
 ALTER TABLE `addressbook_addressbook`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
@@ -164,6 +175,9 @@ ALTER TABLE `addressbook_contact`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `addressbook_group`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `addressbook_filter_contact_map`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 
@@ -228,3 +242,10 @@ CREATE TABLE IF NOT EXISTS `addressbook_portlet_birthday` (
 ALTER TABLE `addressbook_portlet_birthday`
     ADD CONSTRAINT `addressbook_portlet_birthday_fk1` FOREIGN KEY (`userId`) REFERENCES `core_user` (`id`) ON DELETE CASCADE,
     ADD CONSTRAINT `addressbook_portlet_birthday_fk2` FOREIGN KEY (`addressBookId`) REFERENCES `addressbook_addressbook` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `addressbook_filter_contact_map`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `addressbook_filter_contact_map`
+  ADD CONSTRAINT `addressBookId` FOREIGN KEY (`addressBookId`) REFERENCES `addressbook_addressbook` (`id`),
+  ADD CONSTRAINT `contactId` FOREIGN KEY (`contactId`) REFERENCES `addressbook_contact` (`id`);

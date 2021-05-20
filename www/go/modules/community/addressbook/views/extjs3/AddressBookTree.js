@@ -63,7 +63,7 @@ go.modules.community.addressbook.AddressBookTree = Ext.extend(Ext.tree.TreePanel
 
 	findAddressbookNode: function (id) {
 		var rootNode = this.getRootNode(), found = false;
-
+		
 		rootNode.findChildBy(function (node) {
 			if (node.attributes.entity && node.attributes.entity.id === id) {
 				found = node;
@@ -76,6 +76,7 @@ go.modules.community.addressbook.AddressBookTree = Ext.extend(Ext.tree.TreePanel
 
 	onAddressBookChanges: function (entityStore, added, changed, destroyed) {
 
+		
 		//reload if added address book is not present in tree yet.
 		var me = this, reload = false, id, nodeId, node;
 		for (id in added) {
@@ -160,12 +161,17 @@ go.modules.community.addressbook.AddressBookTree = Ext.extend(Ext.tree.TreePanel
 						iconCls: 'ic-delete',
 						text: t("Delete"),
 						handler: function () {
-							Ext.MessageBox.confirm(t("Confirm delete"), t("Are you sure you want to delete this item?"), function (btn) {
-								if (btn !== "yes") {
-									return;
-								}
-								go.Db.store("AddressBook").set({destroy: [this.addressBookMoreMenu.data.id]});
-							}, this);
+							var filter_name = this.addressBookMoreMenu.data.name;
+							if(filter_name.includes('~')){
+								Ext.MessageBox.alert(t("Cannot Delete "+ filter_name), t("You cannot delete the address book created using filter."));
+							}else{
+								Ext.MessageBox.confirm(t("Confirm delete"), t("Are you sure you want to delete this item?"), function (btn) {
+									if (btn !== "yes") {
+										return;
+									}
+									go.Db.store("AddressBook").set({destroy: [this.addressBookMoreMenu.data.id]});
+								}, this);
+							}
 						},
 						scope: this
 					},

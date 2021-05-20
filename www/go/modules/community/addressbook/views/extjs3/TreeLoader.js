@@ -24,6 +24,7 @@ go.modules.community.addressbook.TreeLoader = Ext.extend(go.tree.EntityLoader, {
 				expanded: true
 			},			
 			getParams: function(node) {
+				
 				return {sort: [{property: "name", isAscending: true }], filter: {addressBookId: node.attributes.data.id}};
 			}
 		});
@@ -34,6 +35,7 @@ go.modules.community.addressbook.TreeLoader = Ext.extend(go.tree.EntityLoader, {
 	},
 
 	handleResponse : function(r) {
+		
 		r.responseData.unshift({
 						leaf: true,
 						iconCls: "ic-star",

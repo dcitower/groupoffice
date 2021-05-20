@@ -58,6 +58,7 @@ class Router {
 	public function run() {	
 
 		$body = Request::get()->getBody();
+
 		
 		if(!is_array($body)) {
 			return $this->error("urn:ietf:params:jmap:error:notRequest", 400, "The request parsed as JSON but did not match the type signature of the Request object.");
@@ -65,6 +66,7 @@ class Router {
 		}
 
 		while($method = array_shift($body)) {
+			
 			$this->callMethod($method);
 		}
 
@@ -78,7 +80,6 @@ class Router {
 		}
 
 		list($method, $params, $clientCallId) = $body;
-
 		Response::get()->setClientCall($method, $clientCallId);
 		
 		if($method != "community/dev/Debugger/get") {
@@ -130,7 +131,6 @@ class Router {
 
 	private function findControllerAction($method) {
 		$parts = explode('/', $method);
-
 		if (count($parts) == 2) {
 			//eg. "note/query"
 			$entityType = EntityType::findByName($parts[0]);
@@ -157,6 +157,8 @@ class Router {
 			array_splice($parts, -1, 0, 'controller');
 
 			$controllerClass = 'go\\modules\\' . implode('\\', $parts);
+			
+
 		}
 
 		if (!class_exists($controllerClass)) {
@@ -166,7 +168,7 @@ class Router {
 		if (!method_exists($controllerClass, $controllerMethod)) {
 			throw new Exception(400, 'Bad request. Method "' . $controllerMethod . '" not found in controller "' . $controllerClass . '".');
 		}
-
+		
 		return [$controllerClass, $controllerMethod];
 	}
 
@@ -200,12 +202,13 @@ class Router {
 		if($method == "Core/echo") {
 			return $params;
 		}
+		
 
 		$controllerMethod = $this->findControllerAction($method);
 		$controller = new $controllerMethod[0];
-
+		
 		$params = $this->resolveResultReferences($params);
-
+		
 		return call_user_func([$controller, $controllerMethod[1]], $params);
 	}
 
