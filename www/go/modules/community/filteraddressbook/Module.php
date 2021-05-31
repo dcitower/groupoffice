@@ -20,12 +20,10 @@ class Module extends core\Module {
 	protected function afterInstall(\go\core\model\Module $model){
 
 		// Alter the core method of go\core\jmap\EntityController
-
 		uopz_add_function(\go\core\jmap\EntityController::class,'createEntitites', function () {
 			foreach ($create as $clientId => $properties) {
 
 				$entity = $this->create($properties);
-
 				if(!$this->canCreate($entity)) {
 					$result['notCreated'][$clientId] = new SetError("forbidden", go()->t("Permission denied"));
 					continue;
@@ -49,7 +47,6 @@ class Module extends core\Module {
 						array_push($arr['sort'],$subarr);
 						$arr['calculateTotal'] = 1;
 						$arr['limit'] = 40; 
-
 						$opr = $properties['filter']['operator'];
 						$condition = $properties['filter']['conditions'];
 						$flArr['operator'] = $opr;
