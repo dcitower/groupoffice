@@ -582,8 +582,6 @@ go.modules.community.addressbook.MainPanel = Ext.extend(go.modules.ModulePanel, 
 				this.addButton.setDisabled(true);
 			}
 		}
-
-		console.log(this.grid.store);
 		
 		this.grid.store.load();
 	},
