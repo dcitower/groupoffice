@@ -144,7 +144,7 @@ class Filters {
 		//$this->validate($query, $filter);		
 		foreach($filter as $name => $value) {
 			$name = strtolower($name);
-
+			
 			if(!isset($this->filters[$name])) {
 				throw new UnsupportedFilter();
 			}

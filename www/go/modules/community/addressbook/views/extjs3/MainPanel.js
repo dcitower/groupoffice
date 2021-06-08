@@ -78,7 +78,7 @@ go.modules.community.addressbook.MainPanel = Ext.extend(go.modules.ModulePanel, 
 			ddAppendOnly: true,
 			tbar: [{
 					xtype: "tbtitle",
-					text: t("Address books")
+					text: t("Address book")
 				}, '->',{
 					xtype: "tbsearch"
 				}, {
@@ -113,7 +113,6 @@ go.modules.community.addressbook.MainPanel = Ext.extend(go.modules.ModulePanel, 
 
 		//load the grid on selection change.
 		this.addressBookTree.getSelectionModel().on('selectionchange', function (sm, node) {
-			
 			if (!node) {
 				return;
 			}
@@ -121,6 +120,7 @@ go.modules.community.addressbook.MainPanel = Ext.extend(go.modules.ModulePanel, 
 			if (node.id === "all") {
 				this.setAddressBookId(null);
 			} else if (node.attributes.entity.name === "AddressBook") {
+				
 				this.setAddressBookId(node.attributes.data.id);
 			} else
 			{
@@ -533,7 +533,7 @@ go.modules.community.addressbook.MainPanel = Ext.extend(go.modules.ModulePanel, 
 			tbar: [
 				{
 					xtype: 'tbtitle',
-					text: t("Filters")
+					text: t("Filter")
 				},
 				'->',
 				{
@@ -561,6 +561,7 @@ go.modules.community.addressbook.MainPanel = Ext.extend(go.modules.ModulePanel, 
 	},
 
 	setAddressBookId: function (addressBookId) {
+		
 		this.addButton.setDisabled(false);
 		if (addressBookId) {
 			this.addAddressBookId = addressBookId;

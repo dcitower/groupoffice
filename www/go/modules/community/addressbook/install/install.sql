@@ -108,6 +108,8 @@ CREATE TABLE `addressbook_user_settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=COMPACT;
 
 
+
+
 ALTER TABLE `addressbook_address`
   ADD KEY `contactId` (`contactId`);
 
@@ -157,6 +159,7 @@ ALTER TABLE `addressbook_user_settings`
   ADD KEY `defaultAddressBookId` (`defaultAddressBookId`);
 
 
+
 ALTER TABLE `addressbook_addressbook`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
@@ -165,6 +168,8 @@ ALTER TABLE `addressbook_contact`
 
 ALTER TABLE `addressbook_group`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+
 
 
 ALTER TABLE `addressbook_address`
