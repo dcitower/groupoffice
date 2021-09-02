@@ -160,12 +160,17 @@ go.modules.community.addressbook.AddressBookTree = Ext.extend(Ext.tree.TreePanel
 						iconCls: 'ic-delete',
 						text: t("Delete"),
 						handler: function () {
-							Ext.MessageBox.confirm(t("Confirm delete"), t("Are you sure you want to delete this item?"), function (btn) {
-								if (btn !== "yes") {
-									return;
-								}
-								go.Db.store("AddressBook").set({destroy: [this.addressBookMoreMenu.data.id]});
-							}, this);
+							var filter_name = this.addressBookMoreMenu.data.name;
+							if(filter_name.includes('~')){
+								Ext.MessageBox.alert(t("Cannot Delete "+ filter_name), t("You cannot delete the address book created using filter."));
+							}else{
+								Ext.MessageBox.confirm(t("Confirm delete"), t("Are you sure you want to delete this item?"), function (btn) {
+									if (btn !== "yes") {
+										return;
+									}
+									go.Db.store("AddressBook").set({destroy: [this.addressBookMoreMenu.data.id]});
+								}, this);
+							}
 						},
 						scope: this
 					},
