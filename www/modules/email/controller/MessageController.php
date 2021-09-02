@@ -6,6 +6,7 @@ namespace GO\Email\Controller;
 use GO;
 use GO\Base\Exception\AccessDenied;
 
+use go\core\ErrorHandler;
 use go\core\model\User;
 use GO\Email\Model\Account;
 use GO\Email\Model\Alias;
@@ -370,9 +371,6 @@ Settings -> Accounts -> Double click account -> Folders.", "email");
 				$to = $record['to'];
 				$record['to'] = $record['from'];
 				$record['from'] = $to;
-			}else
-			{
-				$record = $this->checkPersonalField($record, $message);
 			}
 
 			if(empty($record['subject']))
@@ -400,16 +398,7 @@ Settings -> Accounts -> Double click account -> Folders.", "email");
 		return $response;
 	}
 	
-	private function checkPersonalField($record, $message) {
-		
-		$from = $message->from->getAddress();
-						
-		if(\GO\Base\Util\Validate::email(($record['from'])) && strtolower($record['from']) != strtolower($from['email'])) {
-			$record['from'] = '<div style="color: #ff0000">' .$from['email'].'</div>';
-		}
-		
-		return $record;
-	}
+
 
 	/**
 	 * Add a flag to one or multiple messages
@@ -1486,10 +1475,11 @@ Settings -> Accounts -> Double click account -> Folders.", "email");
 		$response['mailbox'] = $params['mailbox'];
 		$response['account_id'] = intval($params['account_id']);
 		$response['do_not_mark_as_read'] = $account->do_not_mark_as_read;
+		$response = $this->_getContactInfo($imapMessage, $params, $response, $account);
 
 		if(!$plaintext){
 
-			if($params['mailbox']!=$account->sent && $params['mailbox']!=$account->drafts) {
+			if(empty($response['sender_contact_id']) && $params['mailbox']!=$account->sent && $params['mailbox']!=$account->drafts) {
 
 				$response = $this->_checkXSS($params, $response);
 			}
@@ -1509,7 +1499,6 @@ Settings -> Accounts -> Double click account -> Folders.", "email");
 		}
 		
 		$response['isInSpamFolder']=$this->_getSpamMoveMailboxName($params['uid'],$params['mailbox'],$account->id);
-		$response = $this->_getContactInfo($imapMessage, $params, $response, $account);
 
 		// START Handle the links div in the email display panel		
 		if(!$plaintext){
@@ -2043,12 +2032,8 @@ Settings -> Accounts -> Double click account -> Folders.", "email");
 		$folder = \GO\Files\Model\Folder::model()->findByPk($params['folder_id']);
 
 		if(!$folder){
-			trigger_error("GO\Email\Controller\Message::actionSaveAttachment(".$params['folder_id'].") folder not found", E_USER_WARNING);
+			ErrorHandler::log("GO\Email\Controller\Message::actionSaveAttachment(".$params['folder_id'].") folder not found", E_USER_WARNING);
 			throw new \GO\Base\Exception\NotFound("Specified folder not found");
-		}
-		
-		if(!$folder->checkPermissionLevel(\GO\Base\Model\Acl::WRITE_PERMISSION)) {
-			throw new \GO\Base\Exception\AccessDenied();
 		}
 
 		$params['filename'] = \GO\Base\Fs\File::stripInvalidChars($params['filename']);		

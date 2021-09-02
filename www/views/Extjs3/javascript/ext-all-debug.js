@@ -11776,7 +11776,7 @@ Ext.extend(Ext.Component, Ext.util.Observable, {
         }
         if(this.rendered && !this.isDestroyed && this.el.isInViewport()){
             this.el.focus();
-            if(selectText === true){
+            if(selectText === true && this.el.dom.select){
                 this.el.dom.select();
             }
         }
@@ -43189,6 +43189,7 @@ Ext.form.BasicForm = Ext.extend(Ext.util.Observable, {
         var valid = true;
         this.items.each(function(f){
            if(!f.validate()){
+           		console.warn("Invalid field: ", f);
                valid = false;
            }
         });
@@ -44447,14 +44448,14 @@ Ext.form.HtmlEditor = Ext.extend(Ext.form.Field, {
         
         try{
             var dbody = this.getEditorBody(),
-                ss = this.el.getStyles('font-size', 'font-family', 'background-image', 'background-repeat', 'background-color', 'color'),
+                //ss = this.el.getStyles('font-size', 'font-family', 'background-image', 'background-repeat', 'background-color', 'color'),
                 doc,
                 fn;
 
-            ss['background-attachment'] = 'fixed'; 
+            //ss['background-attachment'] = 'fixed';
             dbody.bgProperties = 'fixed'; 
 
-            Ext.DomHelper.applyStyles(dbody, ss);
+            //Ext.DomHelper.applyStyles(dbody, ss);
 
             doc = this.getDoc();
 
@@ -46855,6 +46856,7 @@ Ext.grid.GridView = Ext.extend(Ext.util.Observable, {
 
     
     syncHeaderScroll : function() {
+
         var innerHd    = this.innerHd,
             scrollLeft = this.scroller.dom.scrollLeft;
         
@@ -47246,10 +47248,16 @@ Ext.grid.GridView = Ext.extend(Ext.util.Observable, {
         
         if (grid.autoHeight) {
             scrollStyle = scroller.dom.style;
-            scrollStyle.overflow = 'visible';
+            scrollStyle.overflow = 'auto';
             
             if (Ext.isWebKit) {
-                scrollStyle.position = 'static';
+               // scrollStyle.position = 'static';
+            }
+	this.el.setWidth(gridWidth);
+scroller.setWidth(gridWidth);
+            
+            if (this.innerHd) {
+                this.innerHd.style.width = (gridWidth) + "px";
             }
         } else {
             this.el.setSize(gridWidth, gridHeight);

@@ -1267,6 +1267,8 @@ GO.email.EmailClient = Ext.extend(Ext.Panel, {
 });
 
 GO.mainLayout.onReady(function(){
+
+	let countEmailShown;
 	//GO.email.Composer = new GO.email.EmailComposer();
 
 	//contextmenu when an e-mail address is clicked
@@ -1298,14 +1300,14 @@ GO.mainLayout.onReady(function(){
 			}
 		}
 
-		if((!data.email_status.has_new && this.countEmailShown)
+		if((!data.email_status.has_new && countEmailShown)
 			|| data.email_status.total_unseen <= 0
-			|| (this.countEmailShown && this.countEmailShown >= data.email_status.total_unseen)){
+			|| (countEmailShown && countEmailShown >= data.email_status.total_unseen)){
 
-			this.countEmailShown = data.email_status.total_unseen;
+			countEmailShown = data.email_status.total_unseen;
 			return;
 		}
-		this.countEmailShown = data.email_status.total_unseen;
+		countEmailShown = data.email_status.total_unseen;
 		var title = t("New email"),
 			text = t("You have %d unread email(s)").replace('%d', data.email_status.total_unseen);
 
@@ -1405,46 +1407,44 @@ GO.email.saveAttachment = function(attachment,panel)
 		});
 	}
 
+
+
 GO.email.openAttachment = function(attachment, panel, forceDownload)
-	{
+{
 		if(!panel)
 			return false;
 
 		if(!attachment)
 			return false;
 
-		var params = {
-			action:'attachment',
-			account_id: panel.account_id,
-			mailbox: panel.mailbox,
-			uid: panel.uid,
-			number: attachment.number,
-			uuencoded_partnumber: attachment.uuencoded_partnumber,
-			encoding: attachment.encoding,
-			type: attachment.type,
-			subtype: attachment.subtype,
-			filename:attachment.name,
-			charset:attachment.charset,
-			sender:panel.data.sender, //for gnupg and smime,
-			filepath:panel.data.path ? panel.data.path : '' //In some cases encrypted messages are temporary stored on disk so the handlers must use that to fetch the data.
+		if(forceDownload) {
+			attachment.url += '&inline=0';
+			go.util.downloadFile(attachment.url);
+			return;
 		}
 
-		var url_params = '?';
-		for(var name in params){
-			url_params+= name+'='+encodeURIComponent(params[name])+'&';
-		}
-		url_params = url_params.substring(0,url_params.length-1);
+
 
 		if(!forceDownload && (attachment.mime=='message/rfc822' || attachment.mime=='application/eml'))
 		{
-			GO.email.showMessageAttachment(0, params);
+			GO.email.showMessageAttachment(0, {
+				action:'attachment',
+				account_id: panel.account_id,
+				mailbox: panel.mailbox,
+				uid: panel.uid,
+				number: attachment.number,
+				uuencoded_partnumber: attachment.uuencoded_partnumber,
+				encoding: attachment.encoding,
+				type: attachment.type,
+				subtype: attachment.subtype,
+				filename:attachment.name,
+				charset:attachment.charset,
+				sender:panel.data.sender, //for gnupg and smime,
+				filepath:panel.data.path ? panel.data.path : '' //In some cases encrypted messages are temporary stored on disk so the handlers must use that to fetch the data.
+			});
 		}else
 		{
-			if(forceDownload) {
-				attachment.url += '&inline=0';
-				go.util.downloadFile(attachment.url);
-				return;
-			}
+
 
 			switch(attachment.extension)
 			{
@@ -1531,8 +1531,16 @@ GO.email.openAttachment = function(attachment, panel, forceDownload)
 					}
 
 				default:
+					// if(Ext.isSafari) {
+						//must be opened before any async processes happen
+					//	go.util.getDownloadTargetWindow();
+					// }
 
-					go.util.viewFile(attachment.url);
+					if(go.Modules.isAvailable('legacy', 'files')) {
+						return GO.files.openEmailAttachment(attachment, panel, false);
+					} else {
+						go.util.viewFile(attachment.url);
+					}
 
 					break;
 			}

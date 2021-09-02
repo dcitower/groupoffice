@@ -86,7 +86,9 @@ abstract class Entity  extends OrmEntity {
 			$this->change();
 		}
 
-		$this->checkFilesFolder();
+		if(static::supportsFiles()) {
+			$this->checkFilesFolder();
+		}
 
 		$this->saveTmpFiles();
 
@@ -149,6 +151,7 @@ abstract class Entity  extends OrmEntity {
 	 * @throws \GO\Base\Exception\AccessDenied
 	 */
 	private function checkFilesFolder($force = false) {
+
 		if(!self::$checkFilesFolder || empty($this->filesFolderId)) {
 			return true;
 		}
@@ -183,7 +186,7 @@ abstract class Entity  extends OrmEntity {
 	}
 
 	protected static function checkFiles() {
-		if(property_exists(static::class, 'filesFolderId') && Module::isInstalled('legacy', 'files')) {
+		if(static::supportsFiles()) {
 			$tables = static::getMapping()->getTables();
 			$table = array_values($tables)[0]->getName();
 
@@ -223,7 +226,7 @@ abstract class Entity  extends OrmEntity {
 	 * @return bool
 	 */
 	private static function supportsFiles() {
-		return property_exists(static::class, 'filesFolderId');
+		return property_exists(static::class, 'filesFolderId') && Module::isInstalled("legacy", "files");
 	}
 
 	/**
@@ -530,7 +533,7 @@ abstract class Entity  extends OrmEntity {
 
 		$result['totalChanges'] = $changesQuery->foundRows();
 		
-		if($result['totalChanges'] > $maxChanges){
+		if($changes->rowCount() > $maxChanges && $count){
 			
 			$states[1]['offset'] += $maxChanges;
 			

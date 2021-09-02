@@ -367,10 +367,8 @@ class Instance extends Entity {
 			$this->createDatabaseUser($instanceConfig['db_name'], $instanceConfig['db_user'], $instanceConfig['db_pass']);
 			$databaseUserCreated = true;
 
-
 			if(!isset($instanceConfig['db_host'])) {
-				$dsn = \go\core\db\Utils::parseDSN(go()->getConfig()['core']['db']['dsn']);
-				$instanceConfig['db_host'] = $dsn['options']['host'];
+				$instanceConfig['db_host'] = go()->getConfig()['db_host'];
 			}
 
 			$instanceConfig['tmpdir'] = $tmpFolder->getPath();
@@ -381,6 +379,9 @@ class Instance extends Entity {
 					'package' => $this->getStudioPackage()
 				]
 			];
+
+			$instanceConfig['allowed_modules'] = array_map(function($mod) {return $mod['package'].'/'.$mod['module'];}, $this->getAllowedModules());
+			$instanceConfig['allowed_modules'][] = $this->getStudioPackage() . "/*";
 
 			$this->setInstanceConfig($instanceConfig);
 			$this->writeConfig();
@@ -426,13 +427,13 @@ class Instance extends Entity {
 		go()->getDbConnection()->query("DROP USER '" . $dbUser . "'@'%'");
 	}
 	
-	private function createDatabaseUser($dbName, $dbUsername, $dbPassword) {
-		$sql = "GRANT ALL PRIVILEGES ON `" . $dbName . "`.*	TO ".
-								"'".$dbUsername."'@'%' ".
-								"IDENTIFIED BY '" . $dbPassword . "' WITH GRANT OPTION";			
-
+	private function createDatabaseUser($dbName, $dbUsername, $dbPassword)
+	{
+		$sql = "CREATE USER '" . $dbUsername . "' IDENTIFIED BY '" . $dbPassword . "'";
 		go()->getDbConnection()->query($sql);
-		go()->getDbConnection()->query('FLUSH PRIVILEGES');		
+		$sql = "GRANT ALL PRIVILEGES ON `" . $dbName . "`.* TO '" . $dbUsername . "'@'%'";
+		go()->getDbConnection()->query($sql);
+		go()->getDbConnection()->query('FLUSH PRIVILEGES');
 	}
 	
 //	private function createConfigFile($dbName, $dbUsername, $dbPassword, $tmpPath, $dataPath) {
@@ -544,12 +545,27 @@ class Instance extends Entity {
 				"lastActiveAt" => $now,
 				"remoteIpAddress" => $_SERVER['REMOTE_ADDR']
 		];
-		
+
+		if($this->getInstanceDbConnection()->getDatabase()->getTable("core_auth_token")->hasColumn('platform')) {
+			//available since 6.5
+			$data["platform"] = go()->getAuthState()->getToken()->platform;
+			$data["browser"] = go()->getAuthState()->getToken()->browser;
+		}
+
 		if(!$this->getInstanceDbConnection()->insert('core_auth_token', $data)->execute()) {
 			throw new \Exception("Failed to create access token");
 		}
 		
 		return $data['accessToken'];	
+	}
+
+	/**
+	 * Check if the installation was performed.
+	 *
+	 * @return bool
+	 */
+	public function isInstalled() {
+		return $this->getInstanceDbConnection()->getDatabase()->hasTable('core_module');
 	}
 	
 	private function getInstanceDbData(){
@@ -796,6 +812,7 @@ class Instance extends Entity {
 
 		$config = $this->getInstanceConfig();
 		$config['allowed_modules'] = $allowedModules;
+		$config['allowed_modules'][] = $this->getStudioPackage() . "/*";
 		$this->setInstanceConfig($config);
 		$this->writeConfig();
 

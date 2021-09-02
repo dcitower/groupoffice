@@ -301,11 +301,16 @@ GO.dialog.TabbedFormDialog = Ext.extend(GO.Window, {
 	},
 	focus : function(){		
 		var firstField = this.formPanel.form.items.find(function(item){
-			if(!item.disabled && item.isVisible())
+			if(!item.disabled && item.isVisible() && item.isFormField)
 				return true;
 		});
-		if(firstField)
+
+		if(firstField) {
 			firstField.focus(true);
+		} else
+		{
+			return GO.dialog.TabbedFormDialog.superclass.focus.call(this);
+		}
 	},
 	
 	refreshActiveDisplayPanels : function(){
@@ -631,7 +636,10 @@ GO.dialog.TabbedFormDialog = Ext.extend(GO.Window, {
 
 						if(action.result.validationErrors){
 							for(var field in action.result.validationErrors){
-								form.findField(field).markInvalid(action.result.validationErrors[field]);
+								const c = form.findField(field);
+								if(c) {
+									c.markInvalid(action.result.validationErrors[field]);
+								}
 							}
 						}
 					}

@@ -1,3 +1,170 @@
+- Email: Unknown recipients dialog maximized on mobile
+
+24-08-2021 6.5.74
+- Studio: Initial config had "id" for autoExpandColumn instead of "showID".
+- Core: Custom fields can be rendered as text in templates with entity.customFields.asText.foo
+- Postfixadmin: fixed cleanup script of deleted mailboxes
+- Email: Fixed red messages in sent items
+- Core: Fixed html editor styles in Compact theme
+- Email: Fixed broken base64 encoded message in rare case
+
+23-08-2021 6.5.73
+- Timeregistration: Do not clone invoice_id upon cloning a time entry
+- Studio: disable setting autoexpand fields that are hidden by default.
+- Googleauthenticator: Fix negative countdown
+- Email: Fixed HTML code in grid when from tries to spoof email
+- Projects2: Total of incomes will be equal to search results
+- Contact customfield has option to allow/disallow adding new contacts from the dropdown
+- Tickets: Incorrect subject in message to admin when modified by another user
+- Email: Fixed email alias being red even when it's the same as the sender address
+
+23-07-2021 6.5.72
+- Email: Fixed attachment downloading in firefox when opening a second one.
+
+23-07-2021 6.5.71
+- Email: Fixed attachment downloading in firefox when opening a second one.
+- Core: When displaying full date then use leading zero's
+- Google Authenticator: Options to force setup or a countdown timer before you can choose to set it up later.
+
+20-07-2021 6.5.70
+- History: render issue in changes
+
+20-07-2021 6.5.69
+- Calendar: fixed render bug categories combo
+- Address book: Missing first name and sort combo by last name when showing by last name
+- Projects: Update statement could halt upgrade
+- Core: Fixed rendering of double scrollbars on safari when using custom fields in dialogs.
+
+19-07-2021 6.5.68
+- Email: fixed attachments opening in the same window
+- Studio: Bugfix - use default Spreadsheet converter class for code generation
+- Core: custom field of type date was rendered with time in the grid
+- Address book: Lines rendered incorrectly in grid when sorting on last name
+- Address book: Also show contact with last name first in custom field
+- Projects2: Fixed activity type being always mandatory when booking time from projet
+- Address book: [Event Link Description] Error when adding a description to a link (creating an event) #716
+- Calendar: Fixed [Event - Participants] Issue with "Time is not applicable" #717
+- Calendar: Fixed [Appointment Recurrence] Recurrence is changed to "Forever" after any modification #714
+- Calendar: Fixed right click in view
+- Core: Fixed duplicate entities
+
+19-07-2021 6.5.67
+- Notes: Fixed notes encrypt module error when saving notes
+- Core: Fixed "required" on Multiselect field
+- Projects2: fix for missing pr2_standard_tasks table in upgrade
+- Address book: Fixed name fields showing on organizations
+
+12-07-2021 6.5.66
+- Projects2: fix for missing pr2_standard_tasks table in upgrade
+
+12-07-2021 6.5.65
+- Email: added confirm message when saving an email without a subject (instead of sending)
+- Core: Session could be wrongfully destroyed if token not in cache
+- Core: Fixed problem with custom field tabs conditions
+- Projects: Fixed missing columns in time tracking export
+
+12-07-2021 6.5.64
+- History: fixed error message when address book not configured;
+- Multisite: Fixed compatibility issue with MySQL 8
+- Core: Fixed invalid install sql for older mysql servers
+
+08-07-2021 6.5.63
+- Google authenticator: New feature to enforce setup for a user group
+- Timeregistration: Fixed several render errors minutes > seconds
+- Email: Download attachments on iphone fixed
+- Core: Workaround Safari not starting bug: https://bugs.webkit.org/show_bug.cgi?id=226547
+
+28-06-2021 6.5.62
+- Projects2: Fixed duplicate entity name in log
+- Projects2: Display subproject totals if configured in template config
+- Address book: Disable add button if permissions are read only
+- Address book: Disable import / export if menu items permissions are read only
+- Core: Better error message handling in CsvImportDialog
+- Email: colors for priority icons
+- OnlyOffice: Configurable authorization header name
+
+24-06-2021 6.5.61
+- Core: Show authorized clients in Account page of user settings. Adds ability to logout other clients by users or the admin.
+- Calendar: hide custom fieldset data in details when no read permissions (Github #704)
+- Calendar: Fixed visibility issue with categories for non-admin manage user permissions (Github #705)
+- Tickets: fixed HTML entity render bug in ticket panel
+- Core: Cut too long log entry titles at max length
+
+17-06-2021 6.5.60
+- Tickets / Projects: Entity names of Type could conflict in database
+- Core: Fixed horizontal scrolling in grids with autoHeight: true
+- Tickets : Type combobox HTML entities render correctly now
+- Core: fixed required condition in custom fields with != in the condition and updates when form fields change
+
+17-06-2021 6.5.59
+- Addressbook: Added index to optimize contact combobox load
+- Billing: Fixed findAclId() on bool error on new error when create task was activated
+- History: Only log history log entery failus to system log
+- Core: Custom filter sub sub conditions didn't work.
+
+15-06-2021 6.5.58
+- Projects: fixed upgrade error
+
+15-06-2021 6.5.57
+- Projects: Fixed jobs combo in time entry dialog
+- Core: User field combo doesn't show disabled users anymore.
+- Projects: duplicate and delete recursively
+
+10-06-2021 6.5.56
+- Core: Disk cache didn't work for entries that should live forever and cached
+    expiring cache forever. This also caused old passwords to work until cache was flushed.
+
+10-06-2021 6.5.55
+- E-mail: Fixed security problem where users could view last opened attachment of another user.
+- Calendar: Fixed [Invitation] Error when responding #706
+- Core: Fixed: [Custom filed] Error in selection field #708
+- Email: attached messages were not opened without savemailas module anymore. Fixed eml downloaded #709.
+
+07-06-2021 6.5.54
+- Core: Disk cache didn't work for entries that should live forever and cached
+    expiring cache forever. This also caused old passwords to work until cache was flushed.
+- Business: sort employees by User displayName by default
+
+07-06-2021 6.5.53
+- Business: Wrong time format in agreement dialog
+- Google authenticator: Translations didn't work in this module
+- Core: Fixed disabled checkbox for enabling modules in group dialog
+- Calendar: [Views] Click on a view then the My calendar button generate an error #703
+- Address book: Select contacts with read permission only in contact custom field
+- Core: ACL panel could show error when no permissions were set
+- Core: Always move permissions panel to the end in dialogs
+- Office online / libreoffice: Open documents read only when not having write permissions for the service.
+- E-mail: Fixed mail showing partial content when HTML structure was not following correct standards
+
+20-05-2021 6.5.52
+- Address book: Fixed import skipping row and updating records by id or email
+- Core: If link panel has more than 5 items it shows count 5+ instead of 5 when collapsed now
+- Core: New option for users to confirm move of contacts, projects and files.
+- Address book: Add read only address books to birthday portlet
+
+18-05-2021 6.5.51
+- Onlyoffice: Open documents in read only mode when not having manage permissions for the module
+- Email: When opening attachments it's saved to a temporary file so it can be opened by
+  file module integrations like OnlyOffice, Microsoft office online, libreoffice etc.
+- Core: Fixed safari 14.1 wrong button color when button was disabled previously
+- Start page: Auto height for news portlet
+- Core: Added Mongolian (Монгол хэл) translation
+- Calendar: All categories are visible (even with permission) #700
+- Billing: Without manage permissions, you couldn't see totals. This was removed.
+- Email: Don't change invalid email addresses into "unknown@unknown.domain"
+
+17-05-2021 6.5.50
+- Core: save 0-values correctly for numeric Custom FIelds
+- Core: bugfix in function custom fields and zero values
+- Projects: sort employees by name
+- Time registration: sort employee combo by name
+- Addressbook: Correct counts in select contact dialog
+- Addressbook: Better pefromance on large database
+- Core: Fixed about dialog.
+- Projects: Supplier company name not shown in expense budget grid
+- Address book: Brought back starred function but as folder now
+- Email: Work around if label is called "labels"
+
 11-05-2021 6.5.49
 - Core: Fixed fresh manual install
 - Projects: Error on time tracking PDF report
@@ -106,8 +273,41 @@
 
 
 
+- Email: strpos() error when deleting folders with disabled Trash folder
+- Tickets: Enable disabling using of alternative URL
+- Tickets: Settings dialog bigger in order to display 'Show external page button'
+- Core: Fixed install script custom field
+- Projects: Display supplier name in expanse budget grid
+- Timeregistrations: do not copy income_id upon cloning a time entry
+- Core: 0.00 was always displayed in number fields
+- Core: Fixed custom field column delete when creating a new column with a name that already existed.
 
-6.4.244
+22-07-2021 6.4.241
+- Projects: Fixed upgrade error in projects where pr2_settings doesn't exist
+
+19-07-2021 6.4.240
+- Billing: Fixed filter 'Books' in project reports
+- MultiInstance: Fixed compatibility issue with MySQL 8+
+- Core: Check invalid characters in username.
+
+06-07-2021 6.4.239
+- Timeregistration: Fixed time tracking sums
+- Projects: fixed this.filter() is undefined error
+- Calendar / core: Fixed setting reminders for all attendees
+
+28-06-2021 6.4.238
+- Core: fixed required condition in custom fields with != in the condition and updates when form fields change
+- Email: Don't filter XSS if it's from a known contact
+- Tickets: Fix user being able to reopen ticket despite this action being restricted to module manager
+
+14-06-2021 6.4.237
+- Projects: Invalid update query made upgrade halt
+
+14-06-2021 6.4.236
+- Core: Better handling of zero-values in numeric custom fields
+- Core: Fixed zero values of numeric custom fields in function CF
+- Projects: Options to delete and duplicate recursively
+
 10-05-2021 6.4.235
 - Calendar: fix behaviour of copy button in list view
 - Billing: Fixed error "Incorrect integer valie for 'order_at_supplier'"

@@ -17,6 +17,7 @@ namespace GO\Files\Model;
 
 use GO;
 use go\core\fs\Folder as GoFolder;
+use go\core\model\Acl;
 
 /**
  * The Folder model
@@ -761,17 +762,40 @@ class Folder extends \GO\Base\Db\ActiveRecord {
 	 * @param String $name
 	 * @return File
 	 */
-	public function addFile($name) {
+	public function addFile($name, $ignoreAcl = false) {
 		$file = new File();
 
 		$file->folder_id = $this->id;
 		$file->name = $name;
 
 
-		if($file->save())
+		if($file->save($ignoreAcl))
 			return $file;
 		else
 			return false;
+	}
+
+	/**
+	 * Get a read only temporary folder
+	 *
+	 * @param null $userId
+	 * @return false|Folder
+	 * @throws \Exception
+	 */
+	public function tmpFolder($userId = null) {
+		if(!isset($userId)) {
+			$userId = go()->getAuthState()->getUserId();
+		}
+
+		$folder = $this->findByPath('tmp/' . $userId, true);
+		if(!$folder->acl_id || Acl::getUserPermissionLevel($folder->acl_id, $userId) != Acl::LEVEL_MANAGE) {
+			$folder->setNewAcl($userId);
+			if(!$folder->save()) {
+				throw new \Exception("Could not create temporary folder");
+			}
+		}
+
+		return $folder;
 	}
 
 	/**
@@ -1501,7 +1525,7 @@ class Folder extends \GO\Base\Db\ActiveRecord {
 
 		$filesPath = $entity->buildFilesPath();	
 
-		$folder = empty($entity->filesFolderId) ? null : $this->findByPk($entity->filesFolderId);
+		$folder = empty($entity->filesFolderId) ? null : $this->findByPk($entity->filesFolderId, false, true);
 		if($folder) {
 
 			$existingPath = \go\core\util\StringUtil::normalize($folder->getPath());

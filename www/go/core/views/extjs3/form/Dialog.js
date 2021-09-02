@@ -9,7 +9,7 @@
  */
 
 go.form.Dialog = Ext.extend(go.Window, {
-	autoScroll: true,
+	autoScroll: false,
 	width: dp(500),
 	modal: true,
 	maximizable: !GO.util.isMobileOrTablet(),
@@ -62,7 +62,9 @@ go.form.Dialog = Ext.extend(go.Window, {
 			hideMode: "offsets",
 			type: "submit",
 			handler: function() {
-				this.submit();
+				this.submit().catch((error) => {
+					GO.errorDialog.show(error.message);
+				});
 			},
 			scope: this
 		}));
@@ -101,7 +103,11 @@ go.form.Dialog = Ext.extend(go.Window, {
 				this.saveButton = new Ext.Button({
 					cls: "primary",
 					text: t("Save"),
-					handler: function() {this.submit();},
+					handler: function() {
+						this.submit().catch(function(error) {
+							GO.errorDialog.show(error.message);
+						});
+					},
 					scope: this
 				})
 			]
@@ -155,7 +161,8 @@ go.form.Dialog = Ext.extend(go.Window, {
 		return new go.form.EntityPanel({
 			entityStore: this.entityStore,
 			items: items,
-			layout: 'fit'
+			layout: 'fit',
+			autoScroll: false
 		});
 	},
 	
@@ -183,8 +190,24 @@ go.form.Dialog = Ext.extend(go.Window, {
 			}, this);
 		}
 	},
+
+	movePermissionsPanelToEnd : function() {
+		const sharePanelIndex = this.panels.findIndex((el) => {
+			return el instanceof go.permissions.SharePanel;
+		});
+
+		if(sharePanelIndex === -1) {
+			return;
+		}
+
+		//move to end
+		this.panels.push(this.panels.splice(sharePanelIndex, 1)[0]);
+
+	},
 	
 	createTabPanel : function(items) {
+
+		this.movePermissionsPanelToEnd();
 		
 		if(items.length) {
 			this.panels.unshift(this.mainPanel = new Ext.Panel({
@@ -360,14 +383,12 @@ go.form.Dialog = Ext.extend(go.Window, {
 		}
 		
 		if(!this.onBeforeSubmit()) {
-
-			console.warn("onBeforeSubmit returned false");
-			return;
+			return Promise.reject("onBeforeSubmit returned false");
 		}
 
 		if (!this.isValid()) {
-			this.showFirstInvalidField();
-			return;
+			var error = this.showFirstInvalidField();
+			return Promise.reject(error);
 		}
 
 		var isNew = !this.currentId;
@@ -393,8 +414,9 @@ go.form.Dialog = Ext.extend(go.Window, {
 			return serverId;
 
 		}).catch(function(error) {
-			me.showFirstInvalidField();
-			return Promise.reject(error);
+
+			const firstError = me.showFirstInvalidField();
+			return Promise.reject(firstError ? {message: firstError} : error);
 		}).finally(function() {
 			me.actionComplete();
 		})
@@ -417,8 +439,10 @@ go.form.Dialog = Ext.extend(go.Window, {
 			// 		console.warn(f);
 			// 	}
 			// });
-			return;
+			return false;
 		}
+
+
 		//Check for tab panel to show tab with error.
 		var panel = null;
 		var tabPanel = firstFieldWithError.findParentBy(function(c){
@@ -447,6 +471,8 @@ go.form.Dialog = Ext.extend(go.Window, {
 
 		// Focus make server side errors dissappear 
 		// firstFieldWithError.focus();
+
+		return firstFieldWithError.activeError;
 	},
 
 	initFormItems: function () {

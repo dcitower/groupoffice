@@ -268,7 +268,7 @@ class TemplateParser {
 		
 		$count = count($openMatches);
 		if($count != count($closeMatches)) {
-			throw new Exception("Open and close tags don't match");
+			throw new Exception("Invalid template open and close tags of [if] and/or [each] don't match");
 		}
 		
 		$tags = [];		
@@ -669,12 +669,7 @@ class TemplateParser {
 					$getter = 'get' . $pathPart;
 
 					if(method_exists($model, $getter)) {
-						if(strtolower($getter) == "customfields") {
-							//Get custom fields in text mode
-							$model = $model->getCustomFields(true);
-						} else {
-							$model = $model->$getter();
-						}
+						$model = $model->$getter();
 					} else{
 						return null;
 					}

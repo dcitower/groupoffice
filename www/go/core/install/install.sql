@@ -40,7 +40,9 @@ CREATE TABLE `core_auth_token` (
   `expiresAt` datetime DEFAULT NULL,
   `lastActiveAt` datetime NOT NULL,
   `remoteIpAddress` varchar(100) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `userAgent` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `userAgent` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  platform varchar(190) null,
+  browser varchar(190) null,
   `passedAuthenticators` varchar(190) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB;
 
@@ -103,7 +105,7 @@ CREATE TABLE `core_customfields_field` (
   `type` varchar(100) NOT NULL DEFAULT 'Text',
   `sortOrder` int(11) NOT NULL DEFAULT 0,
   `required` tinyint(1) NOT NULL DEFAULT 0,
-  `relatedFieldCondition` varchar(190) NOT NULL DEFAULT '',
+  `relatedFieldCondition` TEXT DEFAULT NULL,
   `conditionallyHidden` BOOLEAN NOT NULL DEFAULT FALSE,
   `conditionallyRequired` BOOLEAN NOT NULL DEFAULT FALSE,
   `hint` varchar(190) DEFAULT NULL,
@@ -111,7 +113,7 @@ CREATE TABLE `core_customfields_field` (
   `unique_values` tinyint(1) NOT NULL DEFAULT 0,
   `prefix` varchar(32) NOT NULL DEFAULT '',
   `suffix` varchar(32) NOT NULL DEFAULT '',
-  `options` text DEFAULT NULL,
+  `options` TEXT DEFAULT NULL,
   `hiddenInGrid` BOOLEAN NOT NULL DEFAULT TRUE,
   `filterable` BOOLEAN NOT NULL DEFAULT FALSE
 ) ENGINE=InnoDB;
@@ -204,7 +206,7 @@ CREATE TABLE `core_search` (
 CREATE TABLE `core_setting` (
   `moduleId` int(11) NOT NULL,
   `name` varchar(190) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `value` text COLLATE utf8mb4_unicode_ci DEFAULT NULL
+  `value` TEXT COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE `core_user` (
@@ -251,7 +253,8 @@ CREATE TABLE `core_user` (
   `no_reminders` tinyint(1) NOT NULL DEFAULT 0,
   `last_password_change` int(11) NOT NULL DEFAULT 0,
   `force_password_change` tinyint(1) NOT NULL DEFAULT 0,
-  `homeDir` varchar (190) not null
+  `homeDir` varchar (190) not null,
+  `confirmOnMove` TINYINT(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB;
 
 CREATE TABLE `core_user_custom_fields` (

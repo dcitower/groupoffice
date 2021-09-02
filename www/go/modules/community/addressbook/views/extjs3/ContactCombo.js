@@ -40,10 +40,20 @@ go.modules.community.addressbook.ContactCombo = Ext.extend(go.form.ComboBox, {
 
 		Ext.applyIf(this, {
 			store: new go.data.Store({
-				fields: ['id', 'name', "photoBlobId", {name: 'organizations', type: "relation"}, 'goUserId', 'phoneNumbers','addresses','emailAddresses','firstName', 'middleName', 'lastName', 'gender', 'color'],
+				fields: [
+					'id',
+					{
+						name: 'name',
+						sortType: Ext.data.SortTypes.asUCString,
+						type: 'string',
+						convert: function(name, data) {
+							return go.modules.community.addressbook.renderName(data);
+						}
+					},
+					"photoBlobId", {name: 'organizations', type: "relation"}, 'goUserId', 'phoneNumbers','addresses','emailAddresses','firstName', 'middleName', 'lastName', 'gender', 'color'],
 				entityStore: "Contact",
 				sortInfo: {
-					field: 'firstName',
+					field: go.User.addressBookSettings.sortBy,
 					direction: 'ASC' 
 				},
 				filters: {
@@ -70,7 +80,7 @@ go.modules.community.addressbook.ContactCombo = Ext.extend(go.form.ComboBox, {
 					return v.isOrganization  ? '<i class="icon">business</i>' : go.util.initials(v.name);
 				},
 				getStyle: function (v) {
-					return v.photoBlobId ? 'background-image: url(' + go.Jmap.thumbUrl(v.photoBlobId, {w: 40, h: 40, zc: 1})  + ')"' : "background-image:none;background-color: #" + v.color;;
+					return v.photoBlobId ? 'background-image: url(' + go.Jmap.thumbUrl(v.photoBlobId, {w: 40, h: 40, zc: 1})  + ')"' : "background-image:none;background-color: #" + v.color;
 				}
 			}
 		 );
