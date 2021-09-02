@@ -56,14 +56,20 @@ class Router {
 	 * community/notes/Note/get maps to go\modules\community\notes\controller\Note::get()
 	 */
 	public function run() {	
+
 		$body = Request::get()->getBody();
+
+		
 		if(!is_array($body)) {
 			return $this->error("urn:ietf:params:jmap:error:notRequest", 400, "The request parsed as JSON but did not match the type signature of the Request object.");
 			throw new Exception(400, 'Bad request');
 		}
+
 		while($method = array_shift($body)) {
+			
 			$this->callMethod($method);
 		}
+
 		Response::get()->sendHeaders();
 		Response::get()->output();
 	}
