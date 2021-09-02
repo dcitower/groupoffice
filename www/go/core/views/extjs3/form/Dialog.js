@@ -387,7 +387,7 @@ go.form.Dialog = Ext.extend(go.Window, {
 			}
 
 			if(me.closeOnSubmit) {
-				location.href = '/#addressbook';
+				location.href = '/groupoffice/#addressbook';
 				me.close();
 			}
 
