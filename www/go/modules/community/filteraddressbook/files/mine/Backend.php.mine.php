@@ -206,8 +206,11 @@ class Backend extends AbstractBackend {
 		$contacts = go()->getDbConnection()->select('c.uri, UNIX_TIMESTAMP(c.modifiedAt) as lastmodified, CONCAT(\'"\', vcardBlobId, \'"\') AS etag, b.size')
 						->from('addressbook_contact', 'c')
 						->join('core_blob', 'b', 'c.vcardBlobId = b.id')
-						->where('c.addressBookId', '=', $addressbookId)
-						->orWhere('c.id', 'IN', $filterContactIds);
+						->where('c.addressBookId', '=', $addressbookId);
+
+		if( count($filterContactIds) ) {
+			$contacts->orWhere('c.id', 'IN', $filterContactIds);
+		}
 
 		return $contacts->all();
 	}
