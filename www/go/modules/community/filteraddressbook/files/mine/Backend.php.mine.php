@@ -129,7 +129,7 @@ class Backend extends AbstractBackend {
 			throw new Forbidden();
 		}
 		
-		$contact = Contact::find()->where(['addressBookId' => $addressBookId, 'uri' => $cardUri])->single();
+		$contact = Contact::find()->where(['uri' => $cardUri])->single();
 		if(!$contact) {
 			throw new NotFound();
 		}
@@ -157,9 +157,17 @@ class Backend extends AbstractBackend {
 	private function generateCards($addressbookId) {
 		$contacts = Contact::find()
 						->join('core_blob', 'b', 'b.id = c.vcardBlobId', 'LEFT')
-						->where(['addressBookId' => $addressbookId])
-						->andWhere('(c.vcardBlobId IS NULL OR b.modifiedAt < c.modifiedAt)')
-						->execute();
+						->where(['addressBookId' => $addressbookId]);
+
+		// filteraddressbook
+		$filterContactIds = $this->filterAddressBookContactIds($addressbookId);
+		if( count($filterContactIds) ) {
+			$contacts->orWhere('c.id', 'IN', $filterContactIds);
+		}
+		
+		$contacts = $contacts
+			->andWhere('(c.vcardBlobId IS NULL OR b.modifiedAt < c.modifiedAt)')
+			->execute();
 		
 		if(!$contacts->rowCount()) {
 			return;
@@ -190,7 +198,23 @@ class Backend extends AbstractBackend {
 		}
 		
 		$this->generateCards($addressbookId);		
+		
+		$contacts = go()->getDbConnection()->select('c.uri, UNIX_TIMESTAMP(c.modifiedAt) as lastmodified, CONCAT(\'"\', vcardBlobId, \'"\') AS etag, b.size')
+						->from('addressbook_contact', 'c')
+						->join('core_blob', 'b', 'c.vcardBlobId = b.id')
+						->where('c.addressBookId', '=', $addressbookId);
 
+		// filteraddressbook
+		$filterContactIds = $this->filterAddressBookContactIds($addressbookId);
+		if( count($filterContactIds) ) {
+			$contacts->orWhere('c.id', 'IN', $filterContactIds);
+		}
+
+		return $contacts->all();
+	}
+
+	protected function filterAddressBookContactIds($addressbookId)
+	{
 		// filteraddressbook
 		$filterContactIds = [];
 		$contactIds = go()->getDbConnection()
@@ -202,17 +226,8 @@ class Backend extends AbstractBackend {
 		foreach ($contactIds as $key => $contactId) {	
 			$filterContactIds[] = $contactId['contactId'];
 		}
-		
-		$contacts = go()->getDbConnection()->select('c.uri, UNIX_TIMESTAMP(c.modifiedAt) as lastmodified, CONCAT(\'"\', vcardBlobId, \'"\') AS etag, b.size')
-						->from('addressbook_contact', 'c')
-						->join('core_blob', 'b', 'c.vcardBlobId = b.id')
-						->where('c.addressBookId', '=', $addressbookId);
 
-		if( count($filterContactIds) ) {
-			$contacts->orWhere('c.id', 'IN', $filterContactIds);
-		}
-
-		return $contacts->all();
+		return $filterContactIds;
 	}
 	
 
