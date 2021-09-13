@@ -17,6 +17,7 @@ class Module extends core\Module {
 
 	protected $installFiles = [
 		'go/core/jmap/' => 'EntityController.php',
+		'go/modules/community/carddav/' => 'Backend.php',
 		'go/core/views/extjs3/form/' => 'Dialog.js',
 		'go/modules/community/addressbook/views/extjs3/' => 'AddressBookTree.js'
 	];
