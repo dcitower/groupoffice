@@ -158,7 +158,7 @@ class Backend extends AbstractBackend {
 		$contacts = Contact::find()
 						->join('core_blob', 'b', 'b.id = c.vcardBlobId', 'LEFT')
 						->where(['addressBookId' => $addressbookId])
-						->andWhere('c.vcardBlobId IS NULL OR b.modifiedAt < c.modifiedAt')
+						->andWhere('(c.vcardBlobId IS NULL OR b.modifiedAt < c.modifiedAt)')
 						->execute();
 		
 		if(!$contacts->rowCount()) {
@@ -190,11 +190,24 @@ class Backend extends AbstractBackend {
 		}
 		
 		$this->generateCards($addressbookId);		
+
+		// filteraddressbook
+		$filterContactIds = [];
+		$contactIds = go()->getDbConnection()
+			->select('contactId')
+			->from('filteraddressbook_contact_map')
+			->where(['addressBookId' => $addressbookId])
+			->all();
+
+		foreach ($contactIds as $key => $contactId) {	
+			$filterContactIds[] = $contactId['contactId'];
+		}
 		
 		$contacts = go()->getDbConnection()->select('c.uri, UNIX_TIMESTAMP(c.modifiedAt) as lastmodified, CONCAT(\'"\', vcardBlobId, \'"\') AS etag, b.size')
 						->from('addressbook_contact', 'c')
 						->join('core_blob', 'b', 'c.vcardBlobId = b.id')
-						->where('c.addressBookId', '=', $addressbookId);
+						->where('c.addressBookId', '=', $addressbookId)
+						->orWhere('c.id', 'IN', $filterContactIds);
 
 		return $contacts->all();
 	}
